@@ -18,4 +18,4 @@ no_index:
 requires:
   RT: 0
   RT::Authen::ExternalAuth: 0
-version: 0.01
+version: 0.02

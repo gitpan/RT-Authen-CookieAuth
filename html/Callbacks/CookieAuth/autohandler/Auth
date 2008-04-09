@@ -23,9 +23,14 @@ unless ($session{'CurrentUser'}) {
         # If CheckCookies is happy the user it gave us is authenticated...
         if ($confirmed_by_cookie) {
             
-            # This is used to stop a pointless LookupExternalUserInfo 
-            # called by LookupFromExternal later on since it's already
+            # This WAS used to stop a pointless LookupExternalUserInfo 
+            # called by UpdateFromExternal later on since it's already
             # called by RT::User::Create if the user is autocreated
+            # but this has been deprecated pending a little bit of a 
+            # rewrite since I realised that we're not calling
+            # CanonicalizeUserInfo but UpdateFromExternal which is the
+            # only code that checks whether the user is externally
+            # marked as disabled.
             my $user_autocreated = 0;
 
             # Create a new CurrentUser for the session and try and load
@@ -71,11 +76,9 @@ unless ($session{'CurrentUser'}) {
             # and the user is not disabled in RT, then...
             if ($session{'CurrentUser'} && $session{'CurrentUser'}->Id) {
                     
-                # If we haven't JUST created the user, then update their 
-                # information from external services before doing anything else
-                unless($user_autocreated){
-                    $session{'CurrentUser'}->UserObj->UpdateFromExternal();
-                }
+                # ALWAYS call UpdateFromExternal otherwise externally-disabled
+                # users could be allowed in.
+                $session{'CurrentUser'}->UserObj->UpdateFromExternal();
 
                 # Now their information is up to date,
                 # check if the user is disabled.
